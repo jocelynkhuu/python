@@ -1,4 +1,8 @@
 # Script was created to allow auto-launch of chrome browser and auto-login to a website. 
+# Will need to create a login.yml:
+# bomgar_user:
+#   login: $USER
+#   password: $PASSWORD
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
