@@ -32,6 +32,10 @@ vol_rec = "/Volumes/Rectangle0.56"
 code = "/Applications/Visual Studio Code.app"
 loc_code = f"{HOME}/Downloads/VSCode.zip"
 
+firefox = "/Applications/Firefox.app"
+loc_firefox = f"{HOME}/Downloads/Firefox.dmg"
+vol_firefox = "/Volumes/Firefox"
+
 alias = """
 ## LS & TREE
 alias ls='lsd'
@@ -51,33 +55,36 @@ syntax on
 set smartindent
 set tabstop=4
 set hlsearch
+
 cmap w!! w !sudo tee > /dev/null %
 
 """
 
+# Creates ~/.zshrc with aliases
 def create_zsh():
     print(f"Searching for {zshrc}")
     if os.path.isfile(zshrc):
-        print(".zshrc already exists. Checking file.")
+        print(f"{zshrc} already exists. Checking file.")
         check_alias = "ls='lsd'"
         with open(f"{zshrc}", "r+") as file:
             file.seek(0)
             lines = file.read()
             if check_alias in lines:
-                    print('Alias already exist in file. Not creating')
+                    print('Alias already exists in file. Not creating.')
             else:
                 print("Alias does not exist. Appending file")
                 file.write(alias)
     else: 
-        print(".zshrc does not exist. Creating new file")
+        print(f"{zshrc} does not exist. Creating new file")
         with open(zshrc, "a") as file:
             file.write(alias)
     # To doublecheck that file is actually there
     if os.path.isfile(zshrc):
-        print("woohoo!")
+        print("Woohoo!")
     else:
-        print(f"could not create {zshrc}")
+        print(f"Could not create {zshrc}.")
 
+# Installs Homebrew
 def install_homebrew():
     cmd = f'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
     subprocess.run(cmd, shell=True, stdout=True)
@@ -90,9 +97,9 @@ def check_homebrew():
     else:
         print("Homebrew installed")
 
-# Only installed MesloLGS NF Regular to make p10k work
+# Only installs MesloLGS NF Regular to make p10k work
 def check_fonts():
-    print("Check if font is installed.")
+    print(f"Checking if fonts are installed in {font_loc}")
     down_font = f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf'
     if os.path.isfile(loc_file):
         print(f"{font_file} exists. Don't forget to change Terminal font!")
@@ -100,10 +107,11 @@ def check_fonts():
         print(f"{font_file} does not exist. Downloading fonts to {font_loc}.")
         subprocess.run(f"curl -L {down_font} -o {font_file}", shell=True, stdout=True)
         if os.path.isfile(loc_file):
-            print("File has been downloaded. Don't forget to change Terminal font!")
+            print("Font has been downloaded. Don't forget to change Terminal font!")
         else:
-            print("File was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf")
+            print("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf")
 
+# Installs powerlevel10k
 def install_plvl():
     cmd = f'brew install romkatv/powerlevel10k/powerlevel10k && echo "source $(brew --prefix)/opt/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc'
     subprocess.run(cmd, shell=True, stdout=True)
@@ -117,6 +125,7 @@ def check_plvl():
     else:
         print("Powerlevel10k is installed.")
 
+# Installs lsd
 def install_lsd():
     cmd = f'brew install lsd'
     subprocess.run(cmd, shell=True, stdout=True)
@@ -129,6 +138,7 @@ def check_lsd():
     else:
         print("lsd is installed.")
 
+# Checks if shell is /bin/zsh
 def check_shell():
     print("Checking shell environment")
     shell = os.environ['SHELL']
@@ -139,11 +149,12 @@ def check_shell():
         cmd = f'chsh -s {def_zsh}' 
         subprocess.run(cmd, shell=True, stdout=True)
 
-# Source .zshrc to apply updates
+# Source .zshrc to apply changes
 def source_zsh():
     cmd = f'source {zshrc} >& /dev/null'
     subprocess.run(cmd, shell=True)
 
+# Creates .vimrc and adds config
 def check_vimrc():
     print(f"Searching for {vimrc}")
     if os.path.isfile(vimrc):
@@ -163,10 +174,11 @@ def check_vimrc():
             file.write(f"{vim_text}")
     # To doublecheck if file is there
     if os.path.isfile(vimrc):
-        print("woohoo!")
+        print("Woohoo!")
     else:
-        print(f"could not create {vimrc}")
+        print(f"could not create {vimrc}.")
 
+# Installs Rectangle app
 def install_rec():
     print("Checking to see if Rectangle is installed: https://rectangleapp.com/")
     if os.path.isdir(rec):
@@ -185,8 +197,30 @@ def install_rec():
         if os.path.isdir(rec):
             print("Successfully installed Rectangle!")
         else:
-            print("Unable to install. Please check Downloads for file.")
+            print("Unable to install Rectangle. Please check ~/Downloads for file.")
 
+# Installs Firefox app
+def install_firefox():
+    print("Checking if Firefox is installed.")
+    if os.path.isdir(firefox):
+        print("Firefox is installed!")
+    else:
+        down_firefox = "https://download.mozilla.org/\?product=firefox-latest-ssl\&os=osx\&lang=en-US"
+        print("Firefox is not installed. Installing now.")
+        cmds = [
+            f"curl -L {down_firefox} -o {loc_firefox}",
+            f"sudo hdiutil attach {loc_firefox} && cd {vol_firefox}",
+            f"sudo cp -R {vol_firefox}/Firefox.app /Applications",
+            f"sudo hdiutil unmount {vol_firefox}"
+        ]
+        for i in cmds:
+            subprocess.run(i, shell=True, stdout=True)
+        if os.path.isdir(firefox):
+            print("Successfully installed Firefox!")
+        else:
+            print("Unable to install Firefox. Please check ~/Downloads for file.")
+
+# Installs VS Code
 def install_code():
     print("Checking if VS Code is installed: https://code.visualstudio.com/Download")
     if os.path.isdir(code):
@@ -204,7 +238,7 @@ def install_code():
         if os.path.isdir(code):
             print("Successfully installed VS Code!")
         else: 
-            print("Unable to install VS Code. Please check Downloads for file.")
+            print("Unable to install VS Code. Please check ~/Downloads for file.")
 
 def main():
     print("Setting up laptop with your configs!")
@@ -218,6 +252,7 @@ def main():
     check_vimrc()
     install_rec()
     install_code()
+    install_firefox()
     print("Setup complete! Please open new terminal. Goodbye! :)")
 
 if __name__ == "__main__":
