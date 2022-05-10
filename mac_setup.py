@@ -6,7 +6,7 @@
 # Installs shell themes: powerlevel10k and lsd
 # Creates/adds aliases to .zshrc and .vimrc
 # 
-# Installs apps: Rectangle & VSCode
+# Installs apps: Rectangle, VSCode, Spotify
 #
 # Tested with Python 3.8.9 on Monterey 12.3.1
 
@@ -14,7 +14,9 @@ import os
 import shutil
 import subprocess
 
+### VARIABLES
 HOME = os.path.expanduser('~')
+DOWNLOADS = f"{HOME}/Downloads"
 zshrc = f"{HOME}/.zshrc"
 def_zsh = "/bin/zsh"
 
@@ -36,10 +38,14 @@ firefox = "/Applications/Firefox.app"
 loc_firefox = f"{HOME}/Downloads/Firefox.dmg"
 vol_firefox = "/Volumes/Firefox"
 
+spotify = "/Applications/Spotify.app"
+loc_spotify = f"{HOME}/Downloads/SpotifyInstaller.zip"
+app_spotify = f"{HOME}/Downloads/Install\ Spotify.app"
+
+### DOTFILE CONFIGS
 alias = """
 ## LS & TREE
 alias ls='lsd'
-
 ### Colorize commands
 alias grep='grep --color=auto'
 alias ip='ip --color=auto'
@@ -55,7 +61,6 @@ syntax on
 set smartindent
 set tabstop=4
 set hlsearch
-
 cmap w!! w !sudo tee > /dev/null %
 
 """
@@ -197,7 +202,7 @@ def install_rec():
         if os.path.isdir(rec):
             print("Successfully installed Rectangle!")
         else:
-            print("Unable to install Rectangle. Please check ~/Downloads for file.")
+            print(f"Unable to install Rectangle. Please check {DOWNLOADS} for file.")
 
 # Installs Firefox app
 def install_firefox():
@@ -218,7 +223,7 @@ def install_firefox():
         if os.path.isdir(firefox):
             print("Successfully installed Firefox!")
         else:
-            print("Unable to install Firefox. Please check ~/Downloads for file.")
+            print(f"Unable to install Firefox. Please check {DOWNLOADS} for file.")
 
 # Installs VS Code
 def install_code():
@@ -230,7 +235,7 @@ def install_code():
         print("VS Code is not installed. Installing now.")
         cmds = [ 
             f"curl -L {down_code} -o {loc_code}",
-            f"unzip {loc_code} -d {HOME}/Downloads/",
+            f"unzip {loc_code} -d {DOWNLOADS}",
             f"sudo mv {HOME}/Downloads/Visual\ Studio\ Code.app /Applications"
         ]   
         for i in cmds:
@@ -238,7 +243,27 @@ def install_code():
         if os.path.isdir(code):
             print("Successfully installed VS Code!")
         else: 
-            print("Unable to install VS Code. Please check ~/Downloads for file.")
+            print(f"Unable to install VS Code. Please check {DOWNLOADS} for file.")
+
+# Installs Spotify
+def install_spotify():
+    print("Checking if Spotify is installed.")
+    if os.path.isdir(spotify):
+        print("Spotify is installed!")
+    else:
+        down_spotify = "https://download.scdn.co/SpotifyInstaller.zip"
+        print("Spotify not installed. Installing now.")
+        cmds = [
+            f"curl -L {down_spotify} -o {loc_spotify}",
+            f"unzip {loc_spotify} -d {DOWNLOADS}",
+            f"/usr/bin/open -W {app_spotify}"
+        ]
+        for i in cmds:
+            subprocess.run(i, shell=True, stdout=True)
+        if os.path.isdir(spotify):
+            print("Successfully installed Spotify!")
+        else:
+            print(f"Unable to install Spotify. Please check {DOWNLOADS}.") 
 
 def main():
     print("Setting up laptop with your configs!")
@@ -253,6 +278,7 @@ def main():
     install_rec()
     install_code()
     install_firefox()
+    install_spotify()
     print("Setup complete! Please open new terminal. Goodbye! :)")
 
 if __name__ == "__main__":
