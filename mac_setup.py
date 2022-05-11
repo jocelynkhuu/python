@@ -49,6 +49,7 @@ app_spotify = f"{HOME}/Downloads/Install\ Spotify.app"
 alias = """
 ## LS & TREE
 alias ls='lsd'
+
 ### Colorize commands
 alias grep='grep --color=auto'
 alias ip='ip --color=auto'
