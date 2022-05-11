@@ -17,6 +17,9 @@ import subprocess
 ### VARIABLES
 HOME = os.path.expanduser('~')
 DOWNLOADS = f"{HOME}/Downloads"
+
+xcode = "/Library/Developer/CommandLineTools"
+
 zshrc = f"{HOME}/.zshrc"
 def_zsh = "/bin/zsh"
 
@@ -64,6 +67,11 @@ set hlsearch
 cmap w!! w !sudo tee > /dev/null %
 
 """
+
+# Install xcode-select
+def install_xcode():
+    if not os.path.isdir(xcode):
+        subprocess.run("xcode-select --install", shell=True, stdout=True)
 
 # Creates ~/.zshrc with aliases
 def create_zsh():
@@ -267,6 +275,7 @@ def install_spotify():
 
 def main():
     print("Setting up laptop with your configs!")
+    install_xcode()
     create_zsh()
     check_homebrew()
     check_plvl()
