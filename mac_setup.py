@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-#
 # Personal script to quickly set up new Macs
 #
 # Installs shell themes: powerlevel10k and lsd
@@ -27,8 +26,6 @@ vimrc = f"{HOME}/.vimrc"
 def_vim = "/usr/bin/vim"
 
 font_loc = f"{HOME}/Library/Fonts"
-font_file = str(f"{font_loc}/'MesloLGS NF Regular'.ttf")
-loc_file = str(f"{font_loc}/MesloLGS NF Regular.ttf")
 
 rec = "/Applications/Rectangle.app"
 loc_rec = f"{HOME}/Downloads/Rectangle.dmg"
@@ -111,19 +108,25 @@ def check_homebrew():
     else:
         print("Homebrew installed")
 
-# Only installs MesloLGS NF Regular to make p10k work
+# Installs recommended fonts for p10k to work
 def check_fonts():
     print(f"Checking if fonts are installed in {font_loc}")
-    down_font = f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf'
-    if os.path.isfile(loc_file):
-        print(f"{font_file} exists. Don't forget to change Terminal font!")
-    else:
-        print(f"{font_file} does not exist. Downloading fonts to {font_loc}.")
-        subprocess.run(f"curl -L {down_font} -o {font_file}", shell=True, stdout=True)
-        if os.path.isfile(loc_file):
-            print("Font has been downloaded. Don't forget to change Terminal font!")
+    down_font = [
+        (f'{font_loc}/MesloLGS NF Regular.ttf',f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf'),
+        (f'{font_loc}/MesloLGS NF Bold.ttf', f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf'),
+        (f'{font_loc}/MesloLGS NF Italic.ttf', f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf'),
+        (f'{font_loc}/MesloLGS NF Bold Italic.ttf', f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf')
+    ]
+    for fonts in down_font:
+        if os.path.isfile(fonts[0]):
+            print(f"{fonts[0]} exists.")
         else:
-            print("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf")
+            print(f"{fonts[0]} does not exist. Downloading fonts to {font_loc}.")
+            subprocess.call(["curl", "-o", fonts[0], "-L", fonts[1]])
+            if os.path.isfile(fonts[0]):
+                print("Font has been downloaded.")
+            else:
+                print("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k")
 
 # Installs powerlevel10k
 def install_plvl():
