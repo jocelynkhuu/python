@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Script to check 2 lists from prod and corp ldap groups 
+# Script to check 2 lists from ldap groups
 # Takes multiline input from user
 
 import sys
