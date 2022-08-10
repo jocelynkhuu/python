@@ -3,8 +3,10 @@
 # Script to check 2 lists from prod and corp ldap groups 
 # Allows taking input from user in format of memberUID: first.lastname
 
+import os
 import sys
-import subprocess
+import ldap
+from getpass import getpass
 
 admin_pass = getpass('Enter admin password: ')
 ldap_server = 'ldaps://example.com'
