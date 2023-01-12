@@ -42,6 +42,9 @@ spotify = "/Applications/Spotify.app"
 loc_spotify = f"{HOME}/Downloads/SpotifyInstaller.zip"
 app_spotify = f"{HOME}/Downloads/Install\ Spotify.app"
 
+iterm = "/Applications/iTerm.app"
+loc_iterm = f"{HOME}/Downloads/iTerm2.zip"
+
 ### DOTFILE CONFIGS
 alias = """
 ## LS & TREE
@@ -277,6 +280,26 @@ def install_spotify():
         else:
             print(f"Unable to install Spotify. Please check {DOWNLOADS}.") 
 
+# Installs iTerm2
+def install_iterm():
+    print("Checking if iTerm2 is installed: https://iterm2.com/")
+    if os.path.isdir(iterm):
+        print("iTerm2 is installed!")
+    else:
+        down_iterm = "https://iterm2.com/downloads/stable/latest"
+        print("Iterm2 is not installed. Installing now.")
+        cmds = [ 
+            f"curl -L {down_iterm} -o {loc_iterm}",
+            f"unzip {loc_iterm} -d {DOWNLOADS}",
+            f"sudo mv {HOME}/Downloads/iTerm.app /Applications"
+        ]   
+        for i in cmds:
+            subprocess.run(i, shell=True, stdout=True)
+        if os.path.isdir(iterm):
+            print("Successfully installed iTerm2!")
+        else: 
+            print(f"Unable to install iTerm2. Please check {DOWNLOADS} for file.")
+
 def main():
     print("Setting up laptop with your configs!")
     install_xcode()
@@ -292,6 +315,7 @@ def main():
     install_code()
     install_firefox()
     install_spotify()
+    install_iterm()
     print("Setup complete! Please open new terminal. Goodbye! :)")
 
 if __name__ == "__main__":
