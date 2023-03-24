@@ -7,7 +7,7 @@ import ldap
 
 ldap_server = 'ldaps://corpldapname.com'
 base = 'dc=name,dc=com'
-rootDN = f'cn=admin,{base}'
+rootDN = f'cn=user,{base}'
 
 con = ldap.initialize(ldap_server)
 con.bind_s(rootDN, admin_pass)
