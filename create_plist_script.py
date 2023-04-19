@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-# This script was just practice to generate a script using default write commands to generate plist files
+# Just a random script to generate a shell script to create a plist and put it in ~/Downloads
 
 import os
+import subprocess
 
 ### VARIABLES
 HOME = os.path.expanduser('~')
@@ -34,3 +35,4 @@ for i in range(numberofKeys):
 
 if os.path.isfile(plist_script):
     os.chmod(plist_script, 0o755)
+    subprocess.run([f"{plist_script}"], shell=True)
