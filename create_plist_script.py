@@ -24,7 +24,7 @@ else:
 
 for i in range(numberofKeys):
     nameofKey = str(input("What is the name of the key? "))
-    typeofKey = str(input("What is the type of key? (ex. -bool, -string): "))
+    typeofKey = str(input("What is the type of key? (ex. -bool, -string, -array-add, etc.): "))
     valueofKey = str(input("What is the value of the key? "))
     print("")
 
