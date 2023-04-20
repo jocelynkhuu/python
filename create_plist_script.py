@@ -15,7 +15,7 @@ plist_name = str(input("What is the name of the plist? "))
 key_number = int(input("How many keys are you creating? "))
 print("")
 
-plist_script = f"{DOWNLOADS}/{plist_name}"
+plist_script = f"{DOWNLOADS}/{plist_name}.plist"
 
 for i in range(key_number):
     key_name = input("What is the name of the key? ")
