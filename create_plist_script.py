@@ -1,38 +1,36 @@
 #!/usr/bin/env python3
 
-# Just a random script to generate a shell script to create a plist and put it in ~/Downloads
-
 import os
-import subprocess
+import plistlib 
+
+# Take input and generate a plist stored in ~/Downloads
 
 ### VARIABLES
 HOME = os.path.expanduser('~')
 DOWNLOADS = f"{HOME}/Downloads"
-plist_script = f"{DOWNLOADS}/create_plist.sh"
+
+dict = {}
 
 nameofplist = str(input("What is the name of the plist? "))
 numberofKeys = int(input("How many keys are you creating? "))
 print("")
 
-if os.path.isfile(plist_script):
-    os.remove(plist_script)
-    with open(plist_script, "a") as file:
-        file.write("#!/bin/bash\n\n")
-else:
-    with open(plist_script, "a") as file:
-        file.write("#!/bin/bash\n\n")
+plist_script = f"{DOWNLOADS}/{nameofplist}"
 
 for i in range(numberofKeys):
-    nameofKey = str(input("What is the name of the key? "))
-    typeofKey = str(input("What is the type of key? (ex. -bool, -string, -array-add, etc.): "))
-    valueofKey = str(input("What is the value of the key? "))
-    print("")
+    key_name = input("What is the name of the key? ")
+    key_value = input("What is the value of the key? ")
 
-    cmd = f"defaults write {DOWNLOADS}/{nameofplist} {nameofKey} {typeofKey} {valueofKey}\n"
-    
-    with open(plist_script,"a") as file:
-        file.write(cmd)
+    if (key_value == "true" or key_value == "false"):
+        dict[key_name.title()] = bool(key_value)
+    else:
+        dict[key_name.title()] = key_value
 
-if os.path.isfile(plist_script):
-    os.chmod(plist_script, 0o755)
-    subprocess.run([f"{plist_script}"], shell=True)
+#print(plistlib.dumps(dict).decode())
+file = open(plist_script,"wb")
+plistlib.dump(dict, file)
+file.close()
+
+with open(plist_script, 'rb') as file:
+    plist = plistlib.load(file)
+    print(plist)
