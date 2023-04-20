@@ -11,13 +11,13 @@ DOWNLOADS = f"{HOME}/Downloads"
 
 dict = {}
 
-nameofplist = str(input("What is the name of the plist? "))
-numberofKeys = int(input("How many keys are you creating? "))
+plist_name = str(input("What is the name of the plist? "))
+key_number = int(input("How many keys are you creating? "))
 print("")
 
-plist_script = f"{DOWNLOADS}/{nameofplist}"
+plist_script = f"{DOWNLOADS}/{plist_name}"
 
-for i in range(numberofKeys):
+for i in range(key_number):
     key_name = input("What is the name of the key? ")
     key_value = input("What is the value of the key? ")
 
@@ -33,11 +33,11 @@ for i in range(numberofKeys):
     else:
         dict[key_name.title()] = key_value
 
-print(plistlib.dumps(dict).decode())
-# file = open(plist_script,"wb")
-# plistlib.dump(dict, file)
-# file.close()
+# print(plistlib.dumps(dict).decode())
+file = open(plist_script,"wb")
+plistlib.dump(dict, file)
+file.close()
 
-# with open(plist_script, 'rb') as file:
-#     plist = plistlib.load(file)
-#     print(plist)
+with open(plist_script, 'rb') as file:
+    plist = plistlib.load(file)
+    print(plist)
