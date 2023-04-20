@@ -36,7 +36,7 @@ for i in range(key_number):
 
 # print(plistlib.dumps(dict).decode())
 file = open(plist_script,"wb")
-plistlib.dump(dict, file)
+plistlib.dump(dict, file, sort_keys=None)
 file.close()
 
 with open(plist_script, 'rb') as file:
