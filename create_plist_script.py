@@ -4,7 +4,7 @@ import os
 import re
 import plistlib 
 
-# Take input and generate a plist stored in ~/Downloads
+# Take input and generate a plist stored in ~/Downloads for Jamf training class
 
 ### VARIABLES
 HOME = os.path.expanduser('~')
