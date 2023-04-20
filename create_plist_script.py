@@ -25,14 +25,19 @@ for i in range(numberofKeys):
         dict[key_name.title()] = bool(True)
     elif key_value == "false" or key_value == "False" or key_value == '0':
         dict[key_name.title()] = bool(False)
+    elif key_name == "ProgramArguments":
+        splitList = key_value.split()
+        dict[key_name.title()] = splitList
+    elif key_value.isdigit() and (key_value != 1 or key_value != 0):
+        dict[key_name.title()] = int(key_value) 
     else:
         dict[key_name.title()] = key_value
 
-# print(plistlib.dumps(dict).decode())
-file = open(plist_script,"wb")
-plistlib.dump(dict, file)
-file.close()
+print(plistlib.dumps(dict).decode())
+# file = open(plist_script,"wb")
+# plistlib.dump(dict, file)
+# file.close()
 
-with open(plist_script, 'rb') as file:
-    plist = plistlib.load(file)
-    print(plist)
+# with open(plist_script, 'rb') as file:
+#     plist = plistlib.load(file)
+#     print(plist)
