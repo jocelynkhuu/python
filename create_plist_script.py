@@ -21,12 +21,14 @@ for i in range(numberofKeys):
     key_name = input("What is the name of the key? ")
     key_value = input("What is the value of the key? ")
 
-    if (key_value == "true" or key_value == "false"):
-        dict[key_name.title()] = bool(key_value)
+    if key_value == "true" or key_value == "True" or key_value == '1':
+        dict[key_name.title()] = bool(True)
+    elif key_value == "false" or key_value == "False" or key_value == '0':
+        dict[key_name.title()] = bool(False)
     else:
         dict[key_name.title()] = key_value
 
-#print(plistlib.dumps(dict).decode())
+# print(plistlib.dumps(dict).decode())
 file = open(plist_script,"wb")
 plistlib.dump(dict, file)
 file.close()
