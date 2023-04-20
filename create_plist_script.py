@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import plistlib 
 
 # Take input and generate a plist stored in ~/Downloads
@@ -25,7 +26,7 @@ for i in range(key_number):
         dict[key_name.title()] = bool(True)
     elif key_value == "false" or key_value == "False" or key_value == '0':
         dict[key_name.title()] = bool(False)
-    elif key_name == "ProgramArguments":
+    elif re.search("/", key_value) and key_name == "ProgramArguments":
         splitList = key_value.split()
         dict[key_name.title()] = splitList
     elif key_value.isdigit() and (key_value != 1 or key_value != 0):
