@@ -15,25 +15,21 @@ DOWNLOADS = f"{HOME}/Downloads"
 dict = {}
 
 parser = argparse.ArgumentParser(prog="Plist scripter", description="Script to create a Plist")
-# parser.add_argument('-n', '--number', type=int, required=True, help='Number of keys')
-parser.add_argument('-f', '--file', required=True, help='File to create')
-parser.add_argument('-k', '--key', required=True, help='key value for plist')
-parser.add_argument('-v', '--value', required=True, help='value of key')
+parser.add_argument('-f', '--file', metavar='', required=True, help='File to create')
+parser.add_argument('-k', '--key', metavar='', required=True, help='key value for plist')
+parser.add_argument('-v', '--value', metavar='', required=True, help='value of key')
 
 try:
     args = parser.parse_args()
 except:
     sys.exit()
 
-# key_number = args.number
 plist_name = args.file
 key_name = args.key
 key_value = args.value
 
 plist_script = f"{DOWNLOADS}/{plist_name}.plist"
 
-
-# for i in range(key_number):
 if key_value == "true" or key_value == "True" or key_value == '1':
     dict[key_name.title()] = bool(True)
 elif key_value == "false" or key_value == "False" or key_value == '0':
@@ -46,7 +42,6 @@ elif key_value.isdigit() and (key_value != 1 or key_value != 0):
 else:
     dict[key_name.title()] = key_value
 
-# print(plistlib.dumps(dict).decode())
 file = open(plist_script,"wb")
 plistlib.dump(dict, file, sort_keys=None)
 file.close()
