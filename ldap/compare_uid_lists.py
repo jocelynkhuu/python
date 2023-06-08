@@ -8,14 +8,14 @@ import sys
 import ldap
 from getpass import getpass
 
-admin_pass = getpass('Enter admin password: ')
+password = getpass('Enter password: ')
 ldap_server = 'ldaps://example.com'
 base = 'dc=example,dc=com'
 people_base = f'ou=example,{base}'
 rootDN = f'cn=user,{base}'
 
 con = ldap.initialize(ldap_server)
-con.bind_s(rootDN, admin_pass)
+con.bind_s(rootDN, password)
 
 second_list = []
 
