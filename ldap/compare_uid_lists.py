@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # Script to check 2 lists from ldap groups 
-# Allows taking input from user in format of memberUID: first.lastname
 
 import sys
 
