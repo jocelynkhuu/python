@@ -10,7 +10,7 @@ base = 'dc=name,dc=com'
 rootDN = f'cn=user,{base}'
 
 con = ldap.initialize(ldap_server)
-con.bind_s(rootDN, admin_pass)
+con.bind_s(rootDN, pass_here)
 
 def get_all_users():
   result = con.search_s('ou=people,dc=name,dc=com', ldap.SCOPE_ONELEVEL, '(objectClass=posixaccount)', ['cn','mail','uid'])
