@@ -7,11 +7,29 @@
 # 
 # Installs apps: Rectangle, VSCode, Spotify
 #
-# Tested with Python 3.8.9 on Monterey 12.3.1
+# Tested with Python 3.8.9 on Ventura
 
 import os
 import shutil
 import subprocess
+import platform
+import requests
+import logging
+import sys
+from datetime import datetime
+
+# Send logs to /tmp as well as stdout
+file_handler = logging.FileHandler(filename=datetime.now().strftime('/tmp/computersetup_%m%d%Y_%H%M%S.log'))
+stdout_handler = logging.StreamHandler(stream=sys.stdout)
+handlers = [file_handler, stdout_handler]
+
+logging.basicConfig(
+    level=logging.DEBUG, 
+    format='[%(asctime)s] %(levelname)s - %(message)s',
+    handlers=handlers
+)
+
+logger = logging.getLogger('LOGGER_NAME')
 
 ### VARIABLES
 HOME = os.path.expanduser('~')
@@ -28,22 +46,36 @@ def_vim = "/usr/bin/vim"
 font_loc = f"{HOME}/Library/Fonts"
 
 rec = "/Applications/Rectangle.app"
-loc_rec = f"{HOME}/Downloads/Rectangle.dmg"
-vol_rec = "/Volumes/Rectangle0.56"
+loc_rec = f"{DOWNLOADS}/Rectangle.dmg"
+down_rec = "https://api.github.com/repos/rxhanson/Rectangle/releases/latest"
 
 code = "/Applications/Visual Studio Code.app"
-loc_code = f"{HOME}/Downloads/VSCode.zip"
+loc_code = f"{DOWNLOADS}/VSCode.zip"
+down_code = "https://code.visualstudio.com/sha/download\?build\=stable\&os\=darwin-universal"
+
+betterdisplay = "/Applications/BetterDisplay.app"
+loc_betterdisplay = f"{DOWNLOADS}/Betterdisplay.dmg"
+bd_latest_down_link = "https://api.github.com/repos/waydabber/BetterDisplay/releases/latest"
+vol_betterdisplay = "/Volumes/BetterDisplay"
 
 firefox = "/Applications/Firefox.app"
-loc_firefox = f"{HOME}/Downloads/Firefox.dmg"
+loc_firefox = f"{DOWNLOADS}/Firefox.dmg"
 vol_firefox = "/Volumes/Firefox"
+down_firefox = "https://download.mozilla.org/\?product=firefox-latest-ssl\&os=osx\&lang=en-US"
+
+chrome = "/Applications/Google Chrome.app"
+loc_chrome = f"{DOWNLOADS}/googlechrome.dmg"
+vol_chrome = "/Volumes/Google\ Chrome"
+down_chrome = "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg"
 
 spotify = "/Applications/Spotify.app"
-loc_spotify = f"{HOME}/Downloads/SpotifyInstaller.zip"
-app_spotify = f"{HOME}/Downloads/Install\ Spotify.app"
+loc_spotify = f"{DOWNLOADS}/SpotifyInstaller.zip"
+app_spotify = f"{DOWNLOADS}/Install\ Spotify.app"
+down_spotify = "https://download.scdn.co/SpotifyInstaller.zip"
 
 iterm = "/Applications/iTerm.app"
-loc_iterm = f"{HOME}/Downloads/iTerm2.zip"
+loc_iterm = f"{DOWNLOADS}/iTerm2.zip"
+down_iterm = "https://iterm2.com/downloads/stable/latest"
 
 ### DOTFILE CONFIGS
 alias = """
@@ -59,6 +91,21 @@ alias ll='ls -la'
 
 """
 
+m1_alias = """
+## LS & TREE
+alias ls='lsd'
+
+### Colorize commands
+alias grep='grep --color=auto'
+alias ip='ip --color=auto'
+alias vi='vim'
+alias cp="cp -i"
+alias ll='ls -la'
+
+export PATH=/opt/homebrew/bin:$PATH
+export PATH=/opt/homebrew/sbin:$PATH
+"""
+
 vim_text = """
 set number
 syntax on
@@ -69,6 +116,7 @@ cmap w!! w !sudo tee > /dev/null %
 
 """
 
+
 # Install xcode-select
 def install_xcode():
     if not os.path.isdir(xcode):
@@ -76,27 +124,34 @@ def install_xcode():
 
 # Creates ~/.zshrc with aliases
 def create_zsh():
-    print(f"Searching for {zshrc}")
+    logging.info(f"Searching for {zshrc}")
     if os.path.isfile(zshrc):
-        print(f"{zshrc} already exists. Checking file.")
+        logging.info(f"{zshrc} already exists. Checking file.")
         check_alias = "ls='lsd'"
         with open(f"{zshrc}", "r+") as file:
             file.seek(0)
             lines = file.read()
             if check_alias in lines:
-                    print('Alias already exists in file. Not creating.')
+                    logging.info('Alias already exists in file. Not creating.')
             else:
-                print("Alias does not exist. Appending file")
-                file.write(alias)
+                logging.info("Alias does not exist. Appending file")
+                if platform.processor() == "arm":
+                    file.write(m1_alias)
+                else:
+                    file.write(alias)
     else: 
-        print(f"{zshrc} does not exist. Creating new file")
+        logging.info(f"{zshrc} does not exist. Creating new file")
         with open(zshrc, "a") as file:
-            file.write(alias)
+            if platform.processor() == "arm":
+                file.write(m1_alias)
+            else:
+                file.write(alias)
+
     # To doublecheck that file is actually there
     if os.path.isfile(zshrc):
-        print("Woohoo!")
+        logging.info("Woohoo!")
     else:
-        print(f"Could not create {zshrc}.")
+        logging.debug(f"Could not create {zshrc}.")
 
 # Installs Homebrew
 def install_homebrew():
@@ -104,16 +159,16 @@ def install_homebrew():
     subprocess.run(cmd, shell=True, stdout=True)
 
 def check_homebrew():
-    print("Checking if homebrew is installed.")
+    logging.info("Checking if homebrew is installed.")
     if shutil.which('brew') is None:
-        print("Installing Homebrew")
+        logging.info("Installing Homebrew")
         install_homebrew()
     else:
-        print("Homebrew installed")
+        logging.info("Homebrew installed")
 
 # Installs recommended fonts for p10k to work
 def check_fonts():
-    print(f"Checking if fonts are installed in {font_loc}")
+    logging.info(f"Checking if fonts are installed in {font_loc}")
     down_font = [
         (f'{font_loc}/MesloLGS NF Regular.ttf',f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf'),
         (f'{font_loc}/MesloLGS NF Bold.ttf', f'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf'),
@@ -122,14 +177,14 @@ def check_fonts():
     ]
     for fonts in down_font:
         if os.path.isfile(fonts[0]):
-            print(f"{fonts[0]} exists.")
+            logging.info(f"{fonts[0]} exists.")
         else:
-            print(f"{fonts[0]} does not exist. Downloading fonts to {font_loc}.")
+            logging.info(f"{fonts[0]} does not exist. Downloading fonts to {font_loc}.")
             subprocess.call(["curl", "-o", fonts[0], "-L", fonts[1]])
             if os.path.isfile(fonts[0]):
-                print("Font has been downloaded.")
+                logging.info("Font has been downloaded.")
             else:
-                print("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k")
+                logging.debug("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k")
 
 # Installs powerlevel10k
 def install_plvl():
@@ -137,13 +192,13 @@ def install_plvl():
     subprocess.run(cmd, shell=True, stdout=True)
 
 def check_plvl():
-    print("Checking if powerlevel10k is installed: https://github.com/romkatv/powerlevel10k")
+    logging.info("Checking if powerlevel10k is installed: https://github.com/romkatv/powerlevel10k")
     powlevel = subprocess.call(['brew list | grep powerlevel10k'], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     if powlevel != 0:
-        print("Not installed. Installing p10k.")
+        logging.info("Not installed. Installing p10k.")
         install_plvl()
     else:
-        print("Powerlevel10k is installed.")
+        logging.info("Powerlevel10k is installed.")
 
 # Installs lsd
 def install_lsd():
@@ -151,21 +206,21 @@ def install_lsd():
     subprocess.run(cmd, shell=True, stdout=True)
 
 def check_lsd():
-    print("Checking if lsd is installed: https://github.com/Peltoche/lsd")
+    logging.info("Checking if lsd is installed: https://github.com/Peltoche/lsd")
     if shutil.which('lsd') is None:
-        print("Not installed. Installing lsd.")
+        logging.info("Not installed. Installing lsd.")
         install_lsd()
     else:
-        print("lsd is installed.")
+        logging.info("lsd is installed.")
 
 # Checks if shell is /bin/zsh
 def check_shell():
-    print("Checking shell environment")
+    logging.info("Checking shell environment")
     shell = os.environ['SHELL']
     if shell == def_zsh:
-        print(f"Shell is {def_zsh}. Right on!")
+        logging.info(f"Shell is {def_zsh}. Right on!")
     else:
-        print(f"Shell is not {def_zsh}. Updating shell.")
+        logging.info(f"Shell is not {def_zsh}. Updating shell.")
         cmd = f'chsh -s {def_zsh}' 
         subprocess.run(cmd, shell=True, stdout=True)
 
@@ -176,38 +231,42 @@ def source_zsh():
 
 # Creates .vimrc and adds config
 def check_vimrc():
-    print(f"Searching for {vimrc}")
+    logging.info(f"Searching for {vimrc}")
     if os.path.isfile(vimrc):
-        print(f"{vimrc} exists. Checking config.")
+        logging.info(f"{vimrc} exists. Checking config.")
         check_vimrc = "set number"
         with open(f"{vimrc}", "r+") as file:
             file.seek(0)
             lines = file.read()
             if check_vimrc in lines:
-                print("Config already exists in file.")
+                logging.info("Config already exists in file.")
             else:
-                print("Config does not exist in file. Appending file.")
+                logging.info("Config does not exist in file. Appending file.")
                 file.write(f"{vim_text}")
     else:
-        print(f"{vimrc} does not exist. Creating file.")
+        logging.info(f"{vimrc} does not exist. Creating file.")
         with open(vimrc, "a") as file:
             file.write(f"{vim_text}")
     # To doublecheck if file is there
     if os.path.isfile(vimrc):
-        print("Woohoo!")
+        logging.info("Woohoo!")
     else:
-        print(f"could not create {vimrc}.")
+        logging.debug(f"could not create {vimrc}.")
 
 # Installs Rectangle app
 def install_rec():
-    print("Checking to see if Rectangle is installed: https://rectangleapp.com/")
+    logging.info("Checking to see if Rectangle is installed: https://rectangleapp.com/")
     if os.path.isdir(rec):
-        print("Rectangle is installed!")
+        logging.info("Rectangle is installed!")
     else:
-        down_rec = "https://github.com/rxhanson/Rectangle/releases/download/v0.56/Rectangle0.56.dmg"
-        print("Rectangle not installed. Installing now.")
+        logging.info("Rectangle not installed. Installing now.")
+        response = requests.get(f"{down_rec}").json()
+        rec_dmg_name = response.get('assets')[0].get('name')
+        rec_vol_name = rec_dmg_name.removesuffix('.dmg')
+        vol_rec = f"/Volumes/{rec_vol_name}"
+        rec_down_url = response.get('assets')[0].get('browser_download_url')
         cmds = [ 
-            f"curl -L {down_rec} -o {loc_rec}", 
+            f"curl -L {rec_down_url} -o {loc_rec}", 
             f"sudo hdiutil attach {loc_rec} && cd {vol_rec}",
             f"sudo cp -R {vol_rec}/Rectangle.app /Applications",
             f"sudo hdiutil unmount {vol_rec}"
@@ -215,18 +274,39 @@ def install_rec():
         for i in cmds:
             subprocess.run(i, shell=True, stdout=True)
         if os.path.isdir(rec):
-            print("Successfully installed Rectangle!")
+            logging.info("Successfully installed Rectangle!")
         else:
-            print(f"Unable to install Rectangle. Please check {DOWNLOADS} for file.")
+            logging.debug(f"Unable to install Rectangle. Please check {DOWNLOADS} for file.")
+
+# Looks for download URL on BetterDisplay release page and install latest version
+def install_bd():
+    logging.info("Checking if BetterDisplay is installed: https://github.com/waydabber/BetterDisplay")
+    if os.path.isdir(betterdisplay):
+        logging.info("BetterDisplay is installed!")
+    else:
+        logging.info("BetterDisplay is not installed. Installing now.")
+        response = requests.get(f"{bd_latest_down_link}").json()
+        bd_down_url = response.get('assets')[0].get('browser_download_url')
+        cmds = [
+            f"curl -L {bd_down_url} -o {loc_betterdisplay}",
+            f"sudo hdiutil attach {loc_betterdisplay} && cd {vol_betterdisplay}",
+            f"sudo cp -R {vol_betterdisplay}/BetterDisplay.app /Applications",
+            f"sudo hdiutil unmount {vol_betterdisplay}"
+        ]
+        for i in cmds:
+            subprocess.run(i, shell=True, stdout=True)
+        if os.path.isdir(betterdisplay):
+            logging.info("Successfully installed BetterDisplay!")
+        else:
+            logging.debug(f"Unable to install BettterDisplay. Please check {DOWNLOADS} for file.")
 
 # Installs Firefox app
 def install_firefox():
-    print("Checking if Firefox is installed.")
+    logging.info("Checking if Firefox is installed.")
     if os.path.isdir(firefox):
-        print("Firefox is installed!")
+        logging.info("Firefox is installed!")
     else:
-        down_firefox = "https://download.mozilla.org/\?product=firefox-latest-ssl\&os=osx\&lang=en-US"
-        print("Firefox is not installed. Installing now.")
+        logging.info("Firefox is not installed. Installing now.")
         cmds = [
             f"curl -L {down_firefox} -o {loc_firefox}",
             f"sudo hdiutil attach {loc_firefox} && cd {vol_firefox}",
@@ -236,38 +316,56 @@ def install_firefox():
         for i in cmds:
             subprocess.run(i, shell=True, stdout=True)
         if os.path.isdir(firefox):
-            print("Successfully installed Firefox!")
+            logging.info("Successfully installed Firefox!")
         else:
-            print(f"Unable to install Firefox. Please check {DOWNLOADS} for file.")
+            logging.debug(f"Unable to install Firefox. Please check {DOWNLOADS} for file.")
+
+# Installs Google Chrome app
+def install_chrome():
+	logging.info("Checking if Google Chrome is installed.")
+	if os.path.isdir(chrome):
+		logging.info("Google Chrome is installed!")
+	else:
+		logging.info("Google Chrome is not installed. Installing now.")
+		cmds = [
+			f"curl -L {down_chrome} -o {loc_chrome}",
+			f"sudo hdiutil attach {loc_chrome} && cd {vol_chrome}",
+			f"sudo cp -R {vol_chrome}/Google\ Chrome.app /Applications",
+			f"sudo hdiutil unmount {vol_chrome}"
+		]
+		for i in cmds:
+			subprocess.run(i, shell=True, stdout=True)
+		if os.path.isdir(chrome):
+			logging.info("Successfully installed Google Chrome!")
+		else:
+			logging.debug(f"Unable to install Google Chrome. Please check {DOWNLOADS} for file.")
 
 # Installs VS Code
 def install_code():
-    print("Checking if VS Code is installed: https://code.visualstudio.com/Download")
+    logging.info("Checking if VS Code is installed: https://code.visualstudio.com/Download")
     if os.path.isdir(code):
-        print("VS Code is installed!")
+        logging.info("VS Code is installed!")
     else:
-        down_code = "https://code.visualstudio.com/sha/download\?build\=stable\&os\=darwin-universal"
-        print("VS Code is not installed. Installing now.")
+        logging.info("VS Code is not installed. Installing now.")
         cmds = [ 
             f"curl -L {down_code} -o {loc_code}",
             f"unzip {loc_code} -d {DOWNLOADS}",
-            f"sudo mv {HOME}/Downloads/Visual\ Studio\ Code.app /Applications"
+            f"sudo mv {DOWNLOADS}/Visual\ Studio\ Code.app /Applications"
         ]   
         for i in cmds:
             subprocess.run(i, shell=True, stdout=True)
         if os.path.isdir(code):
-            print("Successfully installed VS Code!")
+            logging.info("Successfully installed VS Code!")
         else: 
-            print(f"Unable to install VS Code. Please check {DOWNLOADS} for file.")
+            logging.debug(f"Unable to install VS Code. Please check {DOWNLOADS} for file.")
 
 # Installs Spotify
 def install_spotify():
-    print("Checking if Spotify is installed.")
+    logging.info("Checking if Spotify is installed.")
     if os.path.isdir(spotify):
-        print("Spotify is installed!")
+        logging.info("Spotify is installed!")
     else:
-        down_spotify = "https://download.scdn.co/SpotifyInstaller.zip"
-        print("Spotify not installed. Installing now.")
+        logging.info("Spotify not installed. Installing now.")
         cmds = [
             f"curl -L {down_spotify} -o {loc_spotify}",
             f"unzip {loc_spotify} -d {DOWNLOADS}",
@@ -276,32 +374,32 @@ def install_spotify():
         for i in cmds:
             subprocess.run(i, shell=True, stdout=True)
         if os.path.isdir(spotify):
-            print("Successfully installed Spotify!")
+            logging.info("Successfully installed Spotify!")
         else:
-            print(f"Unable to install Spotify. Please check {DOWNLOADS}.") 
+            logging.debug(f"Unable to install Spotify. Please check {DOWNLOADS}.") 
 
 # Installs iTerm2
 def install_iterm():
-    print("Checking if iTerm2 is installed: https://iterm2.com/")
+    logging.info("Checking if iTerm2 is installed: https://iterm2.com/")
     if os.path.isdir(iterm):
-        print("iTerm2 is installed!")
+        logging.info("iTerm2 is installed!")
     else:
-        down_iterm = "https://iterm2.com/downloads/stable/latest"
-        print("Iterm2 is not installed. Installing now.")
+        logging.info("Iterm2 is not installed. Installing now.")
         cmds = [ 
             f"curl -L {down_iterm} -o {loc_iterm}",
             f"unzip {loc_iterm} -d {DOWNLOADS}",
-            f"sudo mv {HOME}/Downloads/iTerm.app /Applications"
+            f"sudo mv {DOWNLOADS}/iTerm.app /Applications"
         ]   
         for i in cmds:
             subprocess.run(i, shell=True, stdout=True)
         if os.path.isdir(iterm):
-            print("Successfully installed iTerm2!")
+            logging.info("Successfully installed iTerm2!")
         else: 
-            print(f"Unable to install iTerm2. Please check {DOWNLOADS} for file.")
+            logging.debug(f"Unable to install iTerm2. Please check {DOWNLOADS} for file.")
+
 
 def main():
-    print("Setting up laptop with your configs!")
+    logging.info("Setting up laptop with your configs!")
     install_xcode()
     create_zsh()
     check_homebrew()
@@ -312,11 +410,13 @@ def main():
     check_fonts()
     check_vimrc()
     install_rec()
+    install_bd()
     install_code()
     install_firefox()
+    install_chrome()
     install_spotify()
     install_iterm()
-    print("Setup complete! Please open new terminal. Goodbye! :)")
+    logging.info("Setup complete! Please open new terminal. Goodbye! :)")
 
 if __name__ == "__main__":
     main()
