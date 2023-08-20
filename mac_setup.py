@@ -7,7 +7,7 @@
 # 
 # Installs apps: Rectangle, VSCode, Spotify
 #
-# Tested with Python 3.8.9 on Ventura
+# Tested with Python 3.11 on Ventura
 
 import os
 import shutil
