@@ -7,7 +7,7 @@
 # 
 # Installs apps: Rectangle, VSCode, Spotify
 #
-# Tested with Python 3.11 on Ventura
+# Tested with Python 3.9.6 on Ventura
 
 import os
 import shutil
@@ -20,14 +20,14 @@ from datetime import datetime
 
 # Send logs to /tmp as well as stdout
 file_handler = logging.FileHandler(filename=datetime.now().strftime('/tmp/computersetup_%m%d%Y_%H%M%S.log'))
-stdout_handler = logging.StreamHandler(stream=sys.stdout)
+stdout_handler = logging.StreamHandler(sys.stdout) 
 handlers = [file_handler, stdout_handler]
 
 logging.basicConfig(
-    level=logging.DEBUG, 
+    level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s - %(message)s',
     handlers=handlers
-)
+) 
 
 logger = logging.getLogger('LOGGER_NAME')
 
@@ -116,7 +116,6 @@ cmap w!! w !sudo tee > /dev/null %
 
 """
 
-
 # Install xcode-select
 def install_xcode():
     if not os.path.isdir(xcode):
@@ -131,7 +130,7 @@ def create_zsh():
         with open(f"{zshrc}", "r+") as file:
             file.seek(0)
             lines = file.read()
-            if check_alias in lines:
+            if check_alias in lines: 
                     logging.info('Alias already exists in file. Not creating.')
             else:
                 logging.info("Alias does not exist. Appending file")
@@ -139,7 +138,7 @@ def create_zsh():
                     file.write(m1_alias)
                 else:
                     file.write(alias)
-    else: 
+    else:
         logging.info(f"{zshrc} does not exist. Creating new file")
         with open(zshrc, "a") as file:
             if platform.processor() == "arm":
@@ -155,8 +154,34 @@ def create_zsh():
 
 # Installs Homebrew
 def install_homebrew():
-    cmd = f'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-    subprocess.run(cmd, shell=True, stdout=True)
+    url = "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+    script_path = "/tmp/install.sh"
+
+    try:
+        # Download the script
+        response = response.get(url)
+        response.raise_for_status()
+
+        with open(script_path, 'wb') as file:
+            file.write(response.content)
+        print("Homebrew script downloaded.")
+
+        # Make the script executable
+        os.chmod(script_path, 0o755)
+
+        # Run the script
+        subprocess.run(['/bin/bash', script_path], check=True)
+        print("Homebrew installed successfully")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading script: {e}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error running script: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally: # this block is always executed regardless of exception status
+        if os.path.exists(script_path):
+             os.remove(script_path)
 
 def check_homebrew():
     logging.info("Checking if homebrew is installed.")
@@ -180,15 +205,26 @@ def check_fonts():
             logging.info(f"{fonts[0]} exists.")
         else:
             logging.info(f"{fonts[0]} does not exist. Downloading fonts to {font_loc}.")
-            subprocess.call(["curl", "-o", fonts[0], "-L", fonts[1]])
-            if os.path.isfile(fonts[0]):
-                logging.info("Font has been downloaded.")
-            else:
-                logging.debug("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k")
+
+            try:
+                response = requests.get(fonts[1])
+                response.raise_for_status()
+
+                with open(fonts[0], 'wb') as file:
+                    file.write(response.content) 
+            except requests.exceptions.RequestException as e:
+                 print(f"Error downloading font: {e}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            finally:
+                if os.path.isfile(fonts[0]):
+                    logging.info("Font has been downloaded.")
+                else:
+                    logging.debug("Font was not downloaded. Please manually download from https://github.com/romkatv/powerlevel10k")
 
 # Installs powerlevel10k
 def install_plvl():
-    cmd = f'brew install romkatv/powerlevel10k/powerlevel10k && echo "source $(brew --prefix)/opt/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc'
+    cmd = f'brew install romkatv/powerlevel10k/powerlevel10k && echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc'
     subprocess.run(cmd, shell=True, stdout=True)
 
 def check_plvl():
@@ -213,6 +249,57 @@ def check_lsd():
     else:
         logging.info("lsd is installed.")
 
+# Install ykman and yubico-piv-tool
+def install_ykman():
+	cmd = f'brew install ykman'
+	subprocess.run(cmd, shell=True, stdout=True)
+
+def check_ykman():
+	logging.info("Checking if ykman is installed: brew install ykman")
+	if shutil.which('ykman') is None:
+		logging.info("Not installed. Install ykman.")
+		install_ykman()
+	else:
+		logging.info("ykman is installed.")
+
+def install_yubico_piv_tool():
+	cmd = f'brew install yubico-piv-tool'
+	subprocess.run(cmd, shell=True, stdout=True)
+
+def check_yubico_piv_tool():
+	logging.info("Checking if yubico-piv-tool is installed: brew install yubico-piv-tool")
+	if shutil.which('yubico-piv-tool') is None:
+		logging.info("Not installed. Install yubico-piv-tool.")
+		install_yubico_piv_tool()
+	else:
+		logging.info("yubico-piv-tool is installed.")
+
+# Install gopass
+def install_gopass():
+	cmd = f'brew install gopass'
+	subprocess.run(cmd, shell=True, stdout=True)
+
+def check_gopass():
+	logging.info("Checking if gopass is installed: brew install gopass")
+	if shutil.which('gopass') is None:
+		logging.info("Not installed. Install gopass.")
+		install_gopass()
+	else:
+		logging.info("gopass is installed.")
+
+# Installs google-cloud-sdk
+def install_gcloud():
+	cmd = f'brew install --cask google-cloud-sdk'
+	subprocess.run(cmd, shell=True, stdout=True)
+
+def check_gcloud():
+	logging.info("Checking if gcloud is installed")
+	if shutil.which('gcloud') is None:
+		logging.info("Not installed. Install gcloud.")
+		install_gopass()
+	else:
+		logging.info("gcloud is installed.")
+
 # Checks if shell is /bin/zsh
 def check_shell():
     logging.info("Checking shell environment")
@@ -234,7 +321,7 @@ def check_vimrc():
     logging.info(f"Searching for {vimrc}")
     if os.path.isfile(vimrc):
         logging.info(f"{vimrc} exists. Checking config.")
-        check_vimrc = "set number"
+        check_vimrc = "set number" 
         with open(f"{vimrc}", "r+") as file:
             file.seek(0)
             lines = file.read()
@@ -263,20 +350,35 @@ def install_rec():
         response = requests.get(f"{down_rec}").json()
         rec_dmg_name = response.get('assets')[0].get('name')
         rec_vol_name = rec_dmg_name.removesuffix('.dmg')
-        vol_rec = f"/Volumes/{rec_vol_name}"
+        vol_rec = f"/Volumes/{rec_vol_name}" 
         rec_down_url = response.get('assets')[0].get('browser_download_url')
-        cmds = [ 
-            f"curl -L {rec_down_url} -o {loc_rec}", 
-            f"sudo hdiutil attach {loc_rec} && cd {vol_rec}",
-            f"sudo cp -R {vol_rec}/Rectangle.app /Applications",
-            f"sudo hdiutil unmount {vol_rec}"
-        ]
-        for i in cmds:
-            subprocess.run(i, shell=True, stdout=True)
-        if os.path.isdir(rec):
-            logging.info("Successfully installed Rectangle!")
-        else:
-            logging.debug(f"Unable to install Rectangle. Please check {DOWNLOADS} for file.")
+        
+        try:
+            # Download the DMG file
+            with requests.get(rec_down_url, stream=True) as r:
+                r.raise_for_status()
+                with open(loc_rec, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+            cmds = [
+                f"sudo hdiutil attach {loc_rec} && cd {vol_rec}",
+                f"sudo cp -R {vol_rec}/Rectangle.app /Applications",
+                f"sudo hdiutil unmount {vol_rec}"
+            ]
+            for cmd in cmds:
+                subprocess.run(cmd, shell=True, stdout=True)
+
+            if os.path.isdir(rec):
+                logging.info("Successfully installed Rectangle!")
+            else:
+                logging.debug(f"Unable to install Rectangle. Please check {DOWNLOADS} for file.")
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error downloading Rectangle DMG: {e}")
+        except Exception as e:
+            logging.error(f"An error occurred during Rectangle installation: {e}")
+
 
 # Looks for download URL on BetterDisplay release page and install latest version
 def install_bd():
@@ -287,18 +389,32 @@ def install_bd():
         logging.info("BetterDisplay is not installed. Installing now.")
         response = requests.get(f"{bd_latest_down_link}").json()
         bd_down_url = response.get('assets')[0].get('browser_download_url')
-        cmds = [
-            f"curl -L {bd_down_url} -o {loc_betterdisplay}",
-            f"sudo hdiutil attach {loc_betterdisplay} && cd {vol_betterdisplay}",
-            f"sudo cp -R {vol_betterdisplay}/BetterDisplay.app /Applications",
-            f"sudo hdiutil unmount {vol_betterdisplay}"
-        ]
-        for i in cmds:
-            subprocess.run(i, shell=True, stdout=True)
-        if os.path.isdir(betterdisplay):
-            logging.info("Successfully installed BetterDisplay!")
-        else:
-            logging.debug(f"Unable to install BettterDisplay. Please check {DOWNLOADS} for file.")
+        
+        try:
+            # Download the DMG file
+            with requests.get(bd_down_url, stream=True) as r:
+                r.raise_for_status()
+                with open(loc_betterdisplay, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+        
+            cmds = [
+                f"curl -L {bd_down_url} -o {loc_betterdisplay}",
+                f"sudo hdiutil attach {loc_betterdisplay} && cd {vol_betterdisplay}",
+                f"sudo cp -R {vol_betterdisplay}/BetterDisplay.app /Applications",
+                f"sudo hdiutil unmount {vol_betterdisplay}"
+            ]
+            for i in cmds:
+                subprocess.run(i, shell=True, stdout=True)
+            if os.path.isdir(betterdisplay):
+                logging.info("Successfully installed BetterDisplay!")
+            else:
+                logging.debug(f"Unable to install BettterDisplay. Please check {DOWNLOADS} for file.")
+        
+        except requests.exceptions.RequestException as e: 
+             logging.error(f"Error downloading BetterDisplay as {e}")
+        except Exception as e:
+            logging.error(f"An error occurred during BetterDisplay installation: {e}")
 
 # Installs Firefox app
 def install_firefox():
@@ -307,18 +423,31 @@ def install_firefox():
         logging.info("Firefox is installed!")
     else:
         logging.info("Firefox is not installed. Installing now.")
-        cmds = [
-            f"curl -L {down_firefox} -o {loc_firefox}",
-            f"sudo hdiutil attach {loc_firefox} && cd {vol_firefox}",
-            f"sudo cp -R {vol_firefox}/Firefox.app /Applications",
-            f"sudo hdiutil unmount {vol_firefox}"
-        ]
-        for i in cmds:
-            subprocess.run(i, shell=True, stdout=True)
-        if os.path.isdir(firefox):
-            logging.info("Successfully installed Firefox!")
-        else:
-            logging.debug(f"Unable to install Firefox. Please check {DOWNLOADS} for file.")
+        
+        try:
+             # Download the DMG file
+            with requests.get(down_firefox, stream=True) as r:
+                r.raise_for_status()
+                with open(loc_firefox, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192): 
+                        f.write(chunk)
+        
+            cmds = [
+                f"sudo hdiutil attach {loc_firefox} && cd {vol_firefox}",
+                f"sudo cp -R {vol_firefox}/Firefox.app /Applications",
+                f"sudo hdiutil unmount {vol_firefox}"
+            ]
+            for i in cmds:
+                subprocess.run(i, shell=True, stdout=True)
+            if os.path.isdir(firefox):
+                logging.info("Successfully installed Firefox!")
+            else:
+                logging.debug(f"Unable to install Firefox. Please check {DOWNLOADS} for file.")
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error downloading Firefox DMG: {e}")
+        except Exception as e:
+            logging.error(f"An error occurred during Firefox installation: {e}")
 
 # Installs Google Chrome app
 def install_chrome():
@@ -327,19 +456,32 @@ def install_chrome():
 		logging.info("Google Chrome is installed!")
 	else:
 		logging.info("Google Chrome is not installed. Installing now.")
-		cmds = [
-			f"curl -L {down_chrome} -o {loc_chrome}",
-			f"sudo hdiutil attach {loc_chrome} && cd {vol_chrome}",
-			f"sudo cp -R {vol_chrome}/Google\ Chrome.app /Applications",
-			f"sudo hdiutil unmount {vol_chrome}"
-		]
-		for i in cmds:
-			subprocess.run(i, shell=True, stdout=True)
-		if os.path.isdir(chrome):
-			logging.info("Successfully installed Google Chrome!")
-		else:
-			logging.debug(f"Unable to install Google Chrome. Please check {DOWNLOADS} for file.")
-
+		
+        try:
+            # Download the DMG file
+            with requests.get(down_chrome, stream=True) as r:
+                r.raise_for_status()
+                with open(loc_firefox, 'wb') as f: 
+                     for chunk in r.iter_content(chunk_size=8182):
+                          f.write(chunk)
+        
+            cmds = [
+                f"sudo hdiutil attach {loc_chrome} && cd {vol_chrome}",
+                f"sudo cp -R {vol_chrome}/Google\ Chrome.app /Applications",
+                f"sudo hdiutil unmount {vol_chrome}"
+            ]
+            for i in cmds:
+                subprocess.run(i, shell=True, stdout=True)
+            if os.path.isdir(chrome):
+                logging.info("Successfully installed Google Chrome!")
+            else:
+                logging.debug(f"Unable to install Google Chrome. Please check {DOWNLOADS} for file.")
+        
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error downloading Google Chrome DMG: {e}")
+        except Exception as e:
+            logging.error(f"An error occurred during Google Chrome installation: {e}")
+        
 # Installs VS Code
 def install_code():
     logging.info("Checking if VS Code is installed: https://code.visualstudio.com/Download")
@@ -347,17 +489,29 @@ def install_code():
         logging.info("VS Code is installed!")
     else:
         logging.info("VS Code is not installed. Installing now.")
-        cmds = [ 
-            f"curl -L {down_code} -o {loc_code}",
-            f"unzip {loc_code} -d {DOWNLOADS}",
-            f"sudo mv {DOWNLOADS}/Visual\ Studio\ Code.app /Applications"
-        ]   
-        for i in cmds:
-            subprocess.run(i, shell=True, stdout=True)
-        if os.path.isdir(code):
-            logging.info("Successfully installed VS Code!")
-        else: 
-            logging.debug(f"Unable to install VS Code. Please check {DOWNLOADS} for file.")
+
+        try:
+            with requests.get(down_code, stream=True) as r:
+                  r.raise_for_status()
+                  with open(loc_code, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk) 
+            cmds = [ 
+                f"curl -L {down_code} -o {loc_code}",
+                f"unzip {loc_code} -d {DOWNLOADS}", 
+                f"sudo mv {DOWNLOADS}/Visual\ Studio\ Code.app /Applications"
+            ]   
+            for i in cmds:
+                subprocess.run(i, shell=True, stdout=True)
+            if os.path.isdir(code):
+                logging.info("Successfully installed VS Code!")
+            else: 
+                logging.debug(f"Unable to install VS Code. Please check {DOWNLOADS} for file.")
+        
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error downloading VS Code DMG: {e}")
+        except Exception as e:
+            logging.error(f"An error occurred during VS Code installation: {e}")
 
 # Installs Spotify
 def install_spotify():
@@ -368,7 +522,7 @@ def install_spotify():
         logging.info("Spotify not installed. Installing now.")
         cmds = [
             f"curl -L {down_spotify} -o {loc_spotify}",
-            f"unzip {loc_spotify} -d {DOWNLOADS}",
+            f"unzip {loc_spotify} -d {DOWNLOADS}", 
             f"/usr/bin/open -W {app_spotify}"
         ]
         for i in cmds:
@@ -384,7 +538,7 @@ def install_iterm():
     if os.path.isdir(iterm):
         logging.info("iTerm2 is installed!")
     else:
-        logging.info("Iterm2 is not installed. Installing now.")
+        logging.info("iTerm2 is not installed. Installing now.")
         cmds = [ 
             f"curl -L {down_iterm} -o {loc_iterm}",
             f"unzip {loc_iterm} -d {DOWNLOADS}",
@@ -405,9 +559,13 @@ def main():
     check_homebrew()
     check_plvl()
     check_lsd()
+    check_ykman()
+    check_yubico_piv_tool()
+    check_gopass()
+    check_gcloud()
     check_shell()
     source_zsh()
-    check_fonts()
+    check_fonts() 
     check_vimrc()
     install_rec()
     install_bd()
