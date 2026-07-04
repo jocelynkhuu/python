@@ -53,7 +53,7 @@ while True:
         if "y" in add_list.lower():
             mal_id_check = input("\nWhat is the MyAnimeList ID? ").strip()
             if mal_id_check:
-                matched_anime: None
+                matched_anime = None
                 for anime in anime_info['data']:
                     if str(anime['mal_id']) == mal_id_check:
                         matched_anime = anime
@@ -64,9 +64,10 @@ while True:
                     with open(file_name, "a") as f:
                         f.write(f"TITLE: {matched_anime['title']}\n -- URL: https://myanimelist.net/anime/{matched_anime['mal_id']}/\n -- MAL_ID: {matched_anime['mal_id']}\n\n")
                         print(f"Added TITLE: {matched_anime['title']} to {file_name}")
-                
                 else:
                     print("That MAL ID doesn't exist or cannot be found.")
+            else: 
+                print("Nothing entered. Try again!")
         # else:
         #     print(f"The data is not a list: {anime_info['data'].keys()}")
 
