@@ -5,7 +5,7 @@
 import requests
 
 print("=" * 50)
-print(f"To quit this script, type 'q' when asked what you are searching for.")
+print(f"To quit this script, type 'q' when asked to enter an anime title.")
 print("=" * 50)
 
 while True:

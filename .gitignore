@@ -3,4 +3,3 @@ venv/
 ENV/
 env/
 .DS_Store
-Thumbs.db
