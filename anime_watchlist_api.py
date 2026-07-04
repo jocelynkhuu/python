@@ -42,6 +42,7 @@ while True:
             print(f"Japanese Title: {anime['title_japanese']}")
             print(f"Number of Episodes: {anime['episodes']}")
             print(f"MyAnimeList ID: {anime['mal_id']}")
+            print(f"Aired: {anime['aired']['string']}")
             # print(f"\nTitle: {anime_info['data'][0]['title']}")
             # print(f"Japanese Title: {anime_info['data'][0]['title_japanese']}")
             # print(f"Number of Episodes: {anime_info['data'][0]['episodes']}")
